@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerador de Cenários BDD</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        label, button { display: block; margin-top: 15px; }
+        textarea { width: 100%; height: 100px; padding: 10px; box-sizing: border-box; }
+        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        #resultado { margin-top: 20px; padding: 10px; background-color: #f4f4f4; border: 1px solid #ddd; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h2>Gerador de Cenários BDD (via n8n/Gemini)</h2>
+
+    <label for="descricao">Descreva o requisito (Ex: "Fazer login e adicionar produto"):</label>
+    <textarea id="descricao" placeholder="Insira seu requisito aqui..."></textarea>
+
+    <button onclick="enviarRequisicao()">Gerar Cenário BDD</button>
+
+    <h3>Cenário Gerado:</h3>
+    <div id="resultado">Aguardando envio...</div>
+
+    <script>
+       
+        const WEBHOOK_URL = "https://meu-n8n-lhtd.onrender.com/webhook-test/gerar-bdd"; 
+
+        async function enviarRequisicao() {
+            const descricao = document.getElementById('descricao').value;
+            const resultadoDiv = document.getElementById('resultado');
+            
+            if (!descricao) {
+                resultadoDiv.textContent = "Por favor, insira uma descrição do requisito.";
+                return;
+            }
+
+            resultadoDiv.textContent = "Gerando cenário, aguarde...";
+
+            try {
+                // Prepara o corpo da requisição POST com a chave que o n8n espera
+                const dados = {
+                    descricao_teste: descricao 
+                };
+
+                const resposta = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                // Verifica se a resposta foi bem-sucedida (status 200)
+                if (resposta.ok) {
+                    const textoCenario = await resposta.text();
+                    resultadoDiv.textContent = textoCenario;
+                } else {
+                    resultadoDiv.textContent = `Erro ao processar (Status: ${resposta.status}). Verifique o console do navegador e o n8n.`;
+                }
+
+            } catch (erro) {
+                resultadoDiv.textContent = `Erro de conexão: ${erro.message}. Verifique se a URL do Webhook está correta e ativa.`;
+            }
+        }
+    </script>
+</body>
+</html>
