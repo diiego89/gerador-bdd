@@ -100,12 +100,19 @@
                 });
 
                 if (resposta.ok) {
-                    // O n8n no modo 'When Last Node Finishes' retorna a saída JSON do Gemini.
-                    const respostaJson = await resposta.json();
+                    // A resposta do n8n (When Last Node Finishes) é um array JSON que contém o item.
+                    const respostaArray = await resposta.json();
                     
-                    // O texto Gherkin está no campo 'text' da saída do Gemini.
-                    // Esta é a correção para a exibição no site.
-                    const textoCenario = respostaJson.text || "Erro: O campo 'text' não foi encontrado na resposta do Gemini.";
+                    // Verificamos se o array possui itens e se o campo 'text' existe:
+                    let textoCenario = "Erro: Campo 'text' não encontrado no JSON do n8n.";
+                    
+                    if (Array.isArray(respostaArray) && respostaArray.length > 0) {
+                        textoCenario = respostaArray[0].text;
+                    }
+                    
+                    if (!textoCenario) {
+                        textoCenario = "Erro: A resposta está vazia ou malformada.";
+                    }
                     
                     resultadoDiv.textContent = textoCenario;
                 } else {
