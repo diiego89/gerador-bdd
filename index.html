@@ -2,19 +2,67 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Cenários BDD</title>
+    <title>Gerador de Cenários BDD (n8n/Gemini)</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
-        label, button { display: block; margin-top: 15px; }
-        textarea { width: 100%; height: 100px; padding: 10px; box-sizing: border-box; }
-        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        #resultado { margin-top: 20px; padding: 10px; background-color: #f4f4f4; border: 1px solid #ddd; white-space: pre-wrap; }
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 50px auto; 
+            padding: 30px; 
+            border: 1px solid #ddd; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            background-color: #f9f9f9;
+        }
+        h2 { 
+            color: #333; 
+            border-bottom: 2px solid #007bff; 
+            padding-bottom: 10px; 
+            margin-bottom: 20px;
+        }
+        label, button { 
+            display: block; 
+            margin-top: 15px; 
+        }
+        textarea { 
+            width: 100%; 
+            height: 120px; 
+            padding: 15px; 
+            box-sizing: border-box; 
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            resize: vertical;
+        }
+        button { 
+            padding: 12px 25px; 
+            background-color: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #resultado { 
+            margin-top: 30px; 
+            padding: 20px; 
+            background-color: #e9ecef; 
+            border: 1px solid #dee2e6; 
+            border-radius: 6px; 
+            white-space: pre-wrap; 
+            font-family: monospace;
+            font-size: 14px;
+            color: #000;
+        }
     </style>
 </head>
 <body>
-    <h2>Gerador de Cenários BDD (via n8n/Gemini)</h2>
+    <h2>🤖 Gerador de Cenários BDD (via n8n/Gemini)</h2>
 
-    <label for="descricao">Descreva o requisito (Ex: "Fazer login e adicionar produto"):</label>
+    <label for="descricao">📝 Descreva o requisito (Ex: "Realizar login, pesquisar um produto e finalizar a compra"):</label>
     <textarea id="descricao" placeholder="Insira seu requisito aqui..."></textarea>
 
     <button onclick="enviarRequisicao()">Gerar Cenário BDD</button>
@@ -23,8 +71,8 @@
     <div id="resultado">Aguardando envio...</div>
 
     <script>
-       
-        const WEBHOOK_URL = "https://meu-n8n-lhtd.onrender.com/webhook-test/gerar-bdd"; 
+        // 🚨 PASSO CRUCIAL: SUBSTITUA PELA SUA URL DE WEBHOOK DE PRODUÇÃO DO N8N 🚨
+        const WEBHOOK_URL = "SUA_URL_DE_PRODUCAO_DO_N8N_AQUI"; 
 
         async function enviarRequisicao() {
             const descricao = document.getElementById('descricao').value;
@@ -35,7 +83,7 @@
                 return;
             }
 
-            resultadoDiv.textContent = "Gerando cenário, aguarde...";
+            resultadoDiv.textContent = "⚙️ Gerando cenário, aguarde...";
 
             try {
                 // Prepara o corpo da requisição POST com a chave que o n8n espera
@@ -51,16 +99,21 @@
                     body: JSON.stringify(dados)
                 });
 
-                // Verifica se a resposta foi bem-sucedida (status 200)
                 if (resposta.ok) {
-                    const textoCenario = await resposta.text();
+                    // O n8n no modo 'When Last Node Finishes' retorna a saída JSON do Gemini.
+                    const respostaJson = await resposta.json();
+                    
+                    // O texto Gherkin está no campo 'text' da saída do Gemini.
+                    // Esta é a correção para a exibição no site.
+                    const textoCenario = respostaJson.text || "Erro: O campo 'text' não foi encontrado na resposta do Gemini.";
+                    
                     resultadoDiv.textContent = textoCenario;
                 } else {
-                    resultadoDiv.textContent = `Erro ao processar (Status: ${resposta.status}). Verifique o console do navegador e o n8n.`;
+                    resultadoDiv.textContent = `❌ Erro ao processar (Status: ${resposta.status}). Verifique o log do n8n.`;
                 }
 
             } catch (erro) {
-                resultadoDiv.textContent = `Erro de conexão: ${erro.message}. Verifique se a URL do Webhook está correta e ativa.`;
+                resultadoDiv.textContent = `⚠️ Erro de conexão: ${erro.message}. Verifique se a URL do Webhook está correta e ativa.`;
             }
         }
     </script>
